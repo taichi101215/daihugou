@@ -1,0 +1,34 @@
+body {
+    font-family: sans-serif;
+    text-align: center;
+    background: #2e7d32;
+    color: white;
+}
+#game { margin-top: 20px; }
+#field { margin: 20px; }
+#field-cards, #hand {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px;
+}
+.card {
+    width: 60px;
+    height: 90px;
+    border: 1px solid #fff;
+    background: #fff;
+    color: black;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+}
+.card.selected {
+    border: 2px solid red;
+    transform: translateY(-10px);
+}
+.cpu { margin: 10px; }
+button {
+    margin: 5px;
+    padding: 10px;
+    font-size: 16px;
+}
