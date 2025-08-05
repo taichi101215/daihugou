@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>大富豪ゲーム - 4人制</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="game">
+    <h1>大富豪ゲーム</h1>
+
+    <!-- ルール設定 -->
+    <div id="settings">
+      <h2>ゲーム設定</h2>
+      <div>
+        <label>
+          <input type="checkbox" id="ruleRevolution"> 革命
+        </label>
+      </div>
+      <div>
+        <label>
+          <input type="checkbox" id="rule8Cut"> 8切り
+        </label>
+      </div>
+      <div>
+        <label>
+          <input type="checkbox" id="rule7Send"> 7送り
+        </label>
+      </div>
+      <div>
+        <label>
+          <input type="checkbox" id="rule10Discard"> 10捨て
+        </label>
+      </div>
+      <button id="startBtn">ゲーム開始</button>
+    </div>
+
+    <div id="players">
+      <div id="player1" class="player">
+        <h2>あなた (プレイヤー1)</h2>
+        <div class="hand" id="hand1"></div>
+      </div>
+      <div id="player2" class="player">
+        <h2>AI (プレイヤー2)</h2>
+        <div class="hand" id="hand2"></div>
+      </div>
+      <div id="player3" class="player">
+        <h2>AI (プレイヤー3)</h2>
+        <div class="hand" id="hand3"></div>
+      </div>
+      <div id="player4" class="player">
+        <h2>AI (プレイヤー4)</h2>
+        <div class="hand" id="hand4"></div>
+      </div>
+    </div>
+
+    <div id="discardPile">
+      <h3>捨て札</h3>
+      <div id="pile"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
