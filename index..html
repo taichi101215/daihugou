@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>大富豪 1対3 AI</title>
+<style>
+  /* 全体設定 */
+  body {
+    font-family: 'Yu Gothic', 'Meiryo', 'Arial', sans-serif;
+    background-color: #1E2A38;
+    color: #EEE;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h1 {
+    text-align: center;
+    color: #FFD966;
+    text-shadow: 1px 1px 3px #000a;
+    margin-bottom: 10px;
+  }
+
+  #settings {
+    background: #2E3A4A;
+    padding: 15px 20px;
+    border-radius: 8px;
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.7);
+  }
+  #settings h3 {
+    margin-top: 0;
+    color: #FFC107;
+  }
+  #settings label {
+    display: inline-block;
+    margin-right: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    user-select: none;
+  }
+  #settings input[type="checkbox"] {
+    transform: scale(1.2);
+    margin-right: 5px;
+    vertical-align: middle;
+    cursor: pointer;
+  }
+  #startBtn {
+    background-color: #FFC107;
+    border: none;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 5px;
+    box-shadow: 0 3px 7px rgba(255, 193, 7, 0.6);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  #startBtn:hover:not(:disabled) {
+    background-color: #FFB300;
+  }
+  #startBtn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  /* ゲーム画面 */
+  #game {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #2E3A4A;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 15px rgba(0,0,0,0.7);
+  }
+
+  h3 {
+    color: #FFEB3B;
+    margin-bottom: 10px;
+    text-shadow: 0 0 3px #000a;
+  }
+
+  /* カード表示 */
+  #player-hand {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding: 10px 0;
+    gap: 8px;
+    border-bottom: 2px solid #444;
+  }
+
+  #player-hand span {
+    user-select: none;
+    width: 48px;
+    height: 70px;
+    line-height: 70px;
+    text-align: center;
+    border-radius: 6px;
+    border: 2px solid #555;
+    background: linear-gradient(145deg, #394B61, #2A3B54);
+    color: #EEE;
+    font-weight: 700;
+    font-size: 18px;
+    text-shadow: 0 0 2px #0008;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    /* スート色 */
+  }
+  #player-hand span.selected {
+    background: linear-gradient(145deg, #FFD700, #FFC107);
+    color: #111;
+    border-color: #E6B800;
+    font-weight: 800;
+    transform: translateY(-8px);
+    box-shadow: 0 4px 10px #FFC107;
+    text-shadow: none;
+    cursor: pointer;
+  }
+  #player-hand span:hover {
+    border-color: #FFEB3B;
+    box-shadow: 0 0 6px #FFEB3B;
+  }
+  /* スート色分け */
+  #player-hand span.red {
+    color: #E53935;
+  }
+  #player-hand span.black {
+    color: #EEE;
+  }
+
+  /* 場札 */
+  #field {
+    min-height: 80px;
+    border: 2px dashed #888;
+    border-radius: 10px;
+    padding: 15px;
+    background: #192331;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  #field span {
+    font-weight: 700;
+    font-size: 22px;
+    color: #FFF;
+    text-shadow: 0 0 4px #000;
+  }
+
+  /* ターン情報 */
+  #turnInfo {
+    background: #0E131D;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: bold;
+    font-size: 18px;
+    margin-top: 8px;
+    text-align: center;
+    color: #D4AF37;
+    text-shadow: 0 0 4px #000;
+  }
+
+  /* ボタン */
+  #playBtn, #passBtn {
+    background-color: #31708E;
+    border: none;
+    padding: 10px 25px;
+    font-weight: bold;
+    color: #FFF;
+    border-radius: 6px;
+    margin: 15px 15px 0 0;
+    cursor: pointer;
+    box-shadow: 0 3px 6px rgba(49,112,142,0.6);
+    transition: background-color 0.3s ease;
+  }
+  #playBtn:hover:not(:disabled), #passBtn:hover:not(:disabled) {
+    background-color: #3E92CC;
+  }
+  #playBtn:disabled, #passBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ログ */
+  #log {
+    margin-top: 25px;
+    height: 180px;
+    background: #16202B;
+    border-radius: 10px;
+    overflow-y: auto;
+    padding: 12px;
+    font-size: 14px;
+    box-shadow: inset 0 0 10px #0008;
+  }
+  #log div {
+    margin-bottom: 6px;
+    line-height: 1.4em;
+  }
+
+  /* スクロールバー（WebKit） */
+  #player-hand::-webkit-scrollbar, #log::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+  }
+  #player-hand::-webkit-scrollbar-thumb, #log::-webkit-scrollbar-thumb {
+    background-color: #666;
+    border-radius: 4px;
+  }
+  #player-hand::-webkit-scrollbar-track, #log::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+</style>
+</head>
+<body>
+
+<h1>大富豪 1対3 AI</h1>
+
+<div id="settings">
+  <h3>ルール設定</h3>
+  <label><input type="checkbox" id="revolution"> 革命</label>
+  <label><input type="checkbox" id="eightCut"> 8切り</label>
+  <label><input type="checkbox" id="tenDiscard"> 10捨て</label>
+  <label><input type="checkbox" id="sevenGive"> 7渡し</label>
+  <button id="startBtn">ゲーム開始</button>
+</div>
+
+<div id="game" style="display:none;">
+  <h3>あなたの手札</h3>
+  <div id="player-hand"></div>
+  <button id="playBtn" disabled>出す</button>
+  <button id="passBtn" disabled>パス</button>
+  
+  <h3>場のカード</h3>
+  <div id="field"></div>
+
+  <h3>ターン / メッセージ</h3>
+  <div id="turnInfo"></div>
+  
+  <div id="log"></div>
+</div>
+
+<script>
+(() => {
+  const suits = ['♠', '♥', '♦', '♣'];
+  const ranks = ['3','4','5','6','7','8','9','10','J','Q','K','A','2'];
+  const rankValues = {};
+  ranks.forEach((r,i) => rankValues[r] = i);
+
+  let settings = {revolution:false, eightCut:false, tenDiscard:false, sevenGive:false};
+  let deck = [];
+  let players = [];
+  let currentPlayer = 0;
+  let fieldCards = [];
+  let revolutionOn = false;
+  let consecutivePasses = 0;
+  let logEl, playerHandEl, fieldEl, turnInfoEl, playBtn, passBtn;
+  let selectedCards = [];
+
+  function addLog(msg) {
+    let p = document.createElement('div');
+    p.textContent = msg;
+    logEl.appendChild(p);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function createDeck() {
+    let cards = [];
+    for(let s of suits){
+      for(let r of ranks){
+        cards.push({suit: s, rank: r});
+      }
+    }
+    return cards;
+  }
+
+  function shuffle(arr) {
+    for(let i = arr.length-1; i>0; i--){
+      let j = Math.floor(Math.random()*(i+1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
+
+  function renderPlayerHand() {
+    playerHandEl.innerHTML = '';
+    players[0].forEach((card, idx) => {
+      let span = document.createElement('span');
+      span.textContent = card.suit + card.rank;
+      span.dataset.index = idx;
+      span.className = selectedCards.includes(idx) ? 'selected' : '';
+      // 赤スートなら赤文字
+      if(card.suit === '♥' || card.suit === '♦'){
+        span.classList.add('red');
+      } else {
+        span.classList.add('black');
+      }
+      span.onclick = () => {
+        if(selectedCards.includes(idx)){
+          selectedCards = selectedCards.filter(i => i !== idx);
+          span.classList.remove('selected');
+        } else {
+          selectedCards.push(idx);
+          span.classList.add('selected');
+        }
+        playBtn.disabled = selectedCards.length === 0;
+      };
+      playerHandEl.appendChild(span);
+    });
+  }
+
+  function compareCards(card1, card2){
+    let v1 = rankValues[card1.rank];
+    let v2 = rankValues[card2.rank];
+    if(revolutionOn) return v2 - v1;
+    else return v1 - v2;
+  }
+
+  function canPlay(cards){
+    if(cards.length === 0) return false;
+    if(fieldCards.length === 0) return true;
+    if(cards.length !== fieldCards.length) return false;
+    let rank = cards[0].rank;
+    if(!cards.every(c => c.rank === rank)) return false;
+    let cmp = compareCards(cards[0], fieldCards[0]);
+    return cmp > 0;
+  }
+
+  function aiPlay(playerIdx){
+    const hand = players[playerIdx];
+    if(fieldCards.length === 0){
+      let minCardIdx = 0;
+      for(let i=1; i<hand.length; i++){
+        if(compareCards(hand[i], hand[minCardIdx]) < 0){
+          minCardIdx = i;
+        }
+      }
+      let played = [hand[minCardIdx]];
+      hand.splice(minCardIdx,1);
+      return played;
+    }
+    if(fieldCards.length !== 1) return null;
+    for(let i=0; i<hand.length; i++){
+      if(compareCards(hand[i], fieldCards[0]) > 0){
+        let played = [hand[i]];
+        hand.splice(i,1);
+        return played;
+      }
+    }
+    return null;
+  }
+
+  function nextTurn(){
+    do {
+      currentPlayer = (currentPlayer + 1) % 4;
+    } while(players[currentPlayer].length === 0);
+    turnInfoEl.textContent = `ターン：${currentPlayer===0?'あなた':`AI${currentPlayer}`}（${players[currentPlayer].length}枚）`;
+    if(currentPlayer === 0){
+      selectedCards = [];
+      renderPlayerHand();
+      playBtn.disabled = true;
+      passBtn.disabled = false;
+      addLog("あなたのターンです。カードを選んで「出す」か「パス」を押してください。");
+    } else {
+      playBtn.disabled = true;
+      passBtn.disabled = true;
+      addLog(`AI${currentPlayer}のターンです。`);
+      setTimeout(() => {
+        const played = aiPlay(currentPlayer);
+        if(played){
+          fieldCards = played;
+          renderField();
+          addLog(`AI${currentPlayer}が${played.map(c => c.suit+c.rank).join(',')}を出しました`);
+          consecutivePasses = 0;
+          if(players[currentPlayer].length === 0){
+            addLog(`AI${currentPlayer}が上がりました！`);
+          }
+          checkSpecialCards(played, currentPlayer);
+          nextTurn();
+        } else {
+          addLog(`AI${currentPlayer}はパスしました。`);
+          consecutivePasses++;
+          if(consecutivePasses >= 3){
+            addLog("場が流れました。場札をリセットします。");
+            fieldCards = [];
+            renderField();
+            consecutivePasses = 0;
+          }
+          nextTurn();
+        }
+      }, 1000);
+    }
+  }
+
+  function checkSpecialCards(played, playerIdx){
+    if(settings.revolution){
+      if(played.length === 4 && played.every(c => c.rank === played[0].rank)){
+        revolutionOn = !revolutionOn;
+        addLog(`革命発動！カードの強さが${revolutionOn ? '逆転' : '元に戻りました'}`);
+      }
+    }
+    if(settings.eightCut){
+      if(played.some(c => c.rank === '8')){
+        addLog('8切り！場札をリセットします。');
+        fieldCards = [];
+        consecutivePasses = 0;
+        renderField();
+      }
+    }
+    if(settings.tenDiscard){
+      if(played.some(c => c.rank === '10')){
+        addLog(`10捨て発動！カードを1枚捨てられます（未実装）`);
+      }
+    }
+  }
+
+  function playerPlay(){
+    const indices = selectedCards.slice().sort((a,b)=>b - a);
+    const playCards = indices.map(i => players[0][i]);
+    if(!canPlay(playCards)){
+      alert('出せないカードの組み合わせです。ルールを確認してください。');
+      return;
+    }
+    for(let i of indices){
+      players[0].splice(i, 1);
+    }
+    fieldCards = playCards;
+    addLog(`あなたが${playCards.map(c => c.suit+c.rank).join(',')}を出しました`);
+    consecutivePasses = 0;
+    checkSpecialCards(playCards, 0);
+    renderField();
+    if(players[0].length === 0){
+      addLog('あなたが上がりました！ゲーム終了');
+      endGame();
+      return;
+    }
+    playBtn.disabled = true;
+    passBtn.disabled = true;
+    renderPlayerHand();
+    nextTurn();
+  }
+
+  function playerPass(){
+    addLog('あなたはパスしました。');
+    passBtn.disabled = true;
+    playBtn.disabled = true;
+    consecutivePasses++;
+    if(consecutivePasses >= 3){
+      addLog("場が流れました。場札をリセットします。");
+      fieldCards = [];
+      renderField();
+      consecutivePasses = 0;
+    }
+    nextTurn();
+  }
+
+  function renderField(){
+    fieldEl.innerHTML = '';
+    fieldCards.forEach(c => {
+      let span = document.createElement('span');
+      span.textContent = c.suit + c.rank;
+      if(c.suit === '♥' || c.suit === '♦'){
+        span.style.color = '#E53935';
+      } else {
+        span.style.color = '#EEE';
+      }
+      fieldEl.appendChild(span);
+    });
+  }
+
+  function endGame(){
+    playBtn.disabled = true;
+    passBtn.disabled = true;
+    turnInfoEl.textContent = "ゲーム終了";
+  }
+
+  function startGame(){
+    settings.revolution = document.getElementById('revolution').checked;
+    settings.eightCut = document.getElementById('eightCut').checked;
+    settings.tenDiscard = document.getElementById('tenDiscard').checked;
+    settings.sevenGive = document.getElementById('sevenGive').checked;
+
+    addLog("ゲーム開始");
+
+    deck = createDeck();
+    shuffle(deck);
+    players = [[],[],[],[]];
+    for(let i=0;i<deck.length;i++){
+      players[i%4].push(deck[i]);
+    }
+    for(let p=0;p<4;p++){
+      players[p].sort((a,b) => rankValues[a.rank]-rankValues[b.rank]);
+    }
+
+    document.getElementById('game').style.display = 'block';
+
+    currentPlayer = -1;
+    fieldCards = [];
+    revolutionOn = false;
+    consecutivePasses = 0;
+    selectedCards = [];
+
+    renderPlayerHand();
+    renderField();
+    turnInfoEl.textContent = '';
+
+    nextTurn();
+  }
+
+  window.onload = () => {
+    logEl = document.getElementById('log');
+    playerHandEl = document.getElementById('player-hand');
+    fieldEl = document.getElementById('field');
+    turnInfoEl = document.getElementById('turnInfo');
+    playBtn = document.getElementById('playBtn');
+    passBtn = document.getElementById('passBtn');
+
+    document.getElementById('startBtn').onclick = () => {
+      logEl.innerHTML = '';
+      startGame();
+    };
+    playBtn.onclick = playerPlay;
+    passBtn.onclick = playerPass;
+  };
+
+})();
+</script>
+
+</body>
+</html>
